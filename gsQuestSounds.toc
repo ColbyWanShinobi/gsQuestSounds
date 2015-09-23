@@ -1,0 +1,8 @@
+﻿## Interface: 60200
+## Title: gsQuestSounds
+## Notes: Plays sounds when finishing quest objectives
+## Author: ColbyWanShinobi
+## Version: 1.0
+## X-Category: Interface Enhancements
+
+gsQuestSounds.lua
