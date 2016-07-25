@@ -1,4 +1,4 @@
-﻿## Interface: 60200
+﻿## Interface: 74000
 ## Title: gsQuestSounds
 ## Notes: Plays sounds when finishing quest objectives
 ## Author: ColbyWanShinobi
