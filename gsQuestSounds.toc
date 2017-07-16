@@ -1,4 +1,4 @@
-﻿## Interface: 70000
+﻿## Interface: 70200
 ## Title: gsQuestSounds (GameShaman)
 ## Notes: Plays sounds when finishing quest objectives
 ## Author: ColbyWanShinobi

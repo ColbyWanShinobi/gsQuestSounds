@@ -57,7 +57,7 @@ function QuestShampoo:checkQuest()
     local complete = q[6];
     local daily = q[7];
     local id = q[8];
-    local link = GetQuestLink(index);
+    local link = GetQuestLink(id);
     if id == self.questId then
       if id and id > 0 then
         local objectivesComplete = countCompleteObjectives(index);
