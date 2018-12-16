@@ -58,6 +58,9 @@ function QuestShampoo:checkQuest()
     local daily = q[7];
     local id = q[8];
     local link = GetQuestLink(id);
+    if link == nil or link == "" then
+      link = "Dynamic Quest";
+    end
     if id == self.questId then
       if id and id > 0 then
         local objectivesComplete = countCompleteObjectives(index);
