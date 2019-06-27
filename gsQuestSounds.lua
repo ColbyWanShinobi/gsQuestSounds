@@ -7,12 +7,18 @@ repo: https://github.com/ColbyWanShinobi/gsQuestSounds.git
 --]]
 
 local sounds = {
-  questComplete = "Sound/creature/Peon/PeonBuildingComplete1.ogg",
-  -- questComplete is played whenever the quest is finally completed and ready to be turned in
-  objectiveComplete = "Sound/Creature/Peon/PeonReady1.ogg",
-  -- ObjectiveComplete is played whenever a quest objective is removed from the quest log. ie. Cross the Pool of Reflection
-  objectiveProgress = "Sound/creature/Peon/PeonWhat3.ogg"
-  -- ObjectiveProgress is played whenever an accumulation quest is incremented. ie. You've found 3/5 acorns
+  --questComplete is played whenever the quest is finally completed and ready to be turned in
+  --"Sound/creature/Peon/PeonBuildingComplete1.ogg"
+  questComplete = 558132,
+  
+  --ObjectiveComplete is played whenever a quest objective is removed from the quest log.
+  --"Sound/Creature/Peon/PeonReady1.ogg"
+  objectiveComplete = 558137,
+  
+  --ObjectiveProgress is played whenever an accumulation quest is incremented. ie. You've found 3/5 acorns
+  --"Sound/creature/Peon/PeonWhat3.ogg"
+  objectiveProgress = 558143
+  
 };
 
 local QuestShampoo = CreateFrame("Frame");
