@@ -21,12 +21,22 @@ local sounds = {
   
 };
 
-local QuestShampoo = CreateFrame("Frame");
+--Classic
+if MainMenuBarLeftEndCap then
+  --print("Found Classic UI...");
+  sounds = {
+    questComplete = "Sound/creature/Peon/PeonBuildingComplete1.ogg",
+    objectiveComplete = "Sound/Creature/Peon/PeonReady1.ogg",
+    objectiveProgress = "Sound/creature/Peon/PeonWhat3.ogg"
+  };
+end
+
+local gsQuestSounds = CreateFrame("Frame");
 local events = {};
 
-QuestShampoo.questIndex = 0;
-QuestShampoo.questId = 0;
-QuestShampoo.completeCount = 0;
+gsQuestSounds.questIndex = 0;
+gsQuestSounds.questId = 0;
+gsQuestSounds.completeCount = 0;
 
 local function countCompleteObjectives(index)
   local n = 0;
@@ -39,7 +49,7 @@ local function countCompleteObjectives(index)
   return n;
 end
 
-function QuestShampoo:setQuest(index)
+function gsQuestSounds:setQuest(index)
   self.questIndex = index;
   if index > 0 then
     --local _, _, _, _, _, _, _, _, id = GetQuestLogTitle(index)
@@ -52,7 +62,7 @@ function QuestShampoo:setQuest(index)
   end
 end
 
-function QuestShampoo:checkQuest()
+function gsQuestSounds:checkQuest()
   if self.questIndex > 0 then
     local index = self.questIndex;
     self.questIndex = 0;
@@ -63,7 +73,13 @@ function QuestShampoo:checkQuest()
     local complete = q[6];
     local daily = q[7];
     local id = q[8];
-    local link = GetQuestLink(id);
+    local link = "";
+    if MainMenuBarLeftEndCap then
+      --print("Found Classic UI...");
+      link = title;
+    else
+      link = GetQuestLink(id);
+    end
     if link == nil or link == "" then
       link = "Dynamic Quest";
     end
@@ -71,21 +87,21 @@ function QuestShampoo:checkQuest()
       if id and id > 0 then
         local objectivesComplete = countCompleteObjectives(index);
         if complete then
-          print("["..level.."] '"..link.."': complete");
-          QuestShampoo:Play(sounds.questComplete);
+          print("gsQuestSounds: ["..level.."] '"..link.."': complete");
+          gsQuestSounds:Play(sounds.questComplete);
         elseif objectivesComplete>self.completeCount then
-          print("["..level.."] '"..link.."': objective complete ("..objectivesComplete.."/"..GetNumQuestLeaderBoards(index)..")");
-          QuestShampoo:Play(sounds.objectiveComplete);
+          print("gsQuestSounds: ["..level.."] '"..link.."': objective complete ("..objectivesComplete.."/"..GetNumQuestLeaderBoards(index)..")");
+          gsQuestSounds:Play(sounds.objectiveComplete);
         else
-          print("["..level.."] '"..link.."': updated");
-          QuestShampoo:Play(sounds.objectiveProgress);
+          print("gsQuestSounds: ["..level.."] '"..link.."': updated");
+          gsQuestSounds:Play(sounds.objectiveProgress);
         end
       end
     end
   end
 end
 
-function QuestShampoo:init()
+function gsQuestSounds:init()
   self:SetScript("OnEvent", function(frame, event, ...)
     local handler = events[event];
     if handler then
@@ -96,10 +112,10 @@ function QuestShampoo:init()
   for k,v in pairs(events) do
     self:RegisterEvent(k);
   end
-    print("gsQuestSounds Loaded!")
+    print("gsQuestSounds by gameshaman.com - Addon Loaded");
 end
 
-function QuestShampoo:Play(sound)
+function gsQuestSounds:Play(sound)
    --print("Playing:", sound)
   if sound and sound~="" then
     PlaySoundFile(sound);
@@ -108,7 +124,7 @@ end
 
 function events:UNIT_QUEST_LOG_CHANGED(unit)
   if unit=="player" then
-    QuestShampoo:checkQuest();
+    gsQuestSounds:checkQuest();
   end
 end
 
@@ -116,10 +132,10 @@ function events:QUEST_WATCH_UPDATE(index)
   -- This event triggers just *before* the changes are registered
   -- in the quest log, giving a great opportunity to quantify changes
   -- in the subsequent UNIT_QUEST_LOG_CHANGED
-  QuestShampoo:setQuest(index);
+  gsQuestSounds:setQuest(index);
 end
 
 
 -- ................................................................
 -- must be last line:
-QuestShampoo:init();
+gsQuestSounds:init();
