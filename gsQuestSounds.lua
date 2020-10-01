@@ -38,6 +38,7 @@ gsQuestSounds.currentQuestLevel = 0;
 gsQuestSounds.currentCompleteQuestObjectives = 0;
 gsQuestSounds.currentQuestProgressCounter = 0;
 gsQuestSounds.currentQuestProgressTable = {};
+gsQuestSounds.currentQuestLink = "";
 
 local function getCompleteObjectiveCount(objectives)
   local completeObjectives = 0;
@@ -69,6 +70,14 @@ local function getUpdatedQuestObjectiveString(id, oldObjectives, freshObjectives
   return questText;
 end
 
+local function createQuestLink(id, level, title)
+  --https://wow.gamepedia.com/QuestLink
+  --|cff808080|Hquest:99:15|h[Arugal's Folly]|h|r
+  --|cffffffff|Hquest:QUESTID:QUESTLEVEL|h[QUESTTITLE]|h|r
+  local link = "|cffffff00|Hquest:"..id..":"..level.."|h["..title.."]|h|r";
+  return link;
+end
+
 function gsQuestSounds:setCurrentQuest(id)
   if id and id > 0 then
     self.currentQuestId = id;
@@ -82,6 +91,8 @@ function gsQuestSounds:setCurrentQuest(id)
     self.currentQuestProgressTable = objectives;
     self.currentCompleteQuestObjectives = getCompleteObjectiveCount(objectives);
     self.currentQuestProgressCounter = getQuestProgressCount(objectives);
+    local link = createQuestLink(id, level, title);
+    self.currentQuestLink = link;
   end
 end
 
@@ -91,6 +102,7 @@ function gsQuestSounds:checkCurrentQuest()
     local title = gsQuestSounds.currentQuestTitle;
     local level = self.currentQuestLevel;
     local title = self.currentQuestTitle;
+    local link = self.currentQuestLink;
     local complete = C_QuestLog.ReadyForTurnIn(id);
     local totalObjectives = C_QuestLog.GetNumQuestObjectives(id);
     local objectives = C_QuestLog.GetQuestObjectives(id);
@@ -100,20 +112,20 @@ function gsQuestSounds:checkCurrentQuest()
     
     if complete then
       --Quest is complete
-      print("gsQS: ["..level.."] '"..title.."': "..updatedText);
-      print("gsQS: ["..level.."] '"..title.."': Quest Complete");
+      print("gsQS: ["..level.."] '"..link.."': "..updatedText);
+      print("gsQS: ["..level.."] '"..link.."': Quest Complete");
       gsQuestSounds:Play(sounds.questComplete);
     elseif completeObjectives > self.currentCompleteQuestObjectives then
       --An objective is complete
-      print("gsQS: ["..level.."] '"..title.."': "..updatedText);
-      print("gsQS: ["..level.."] '"..title.."': Objective Complete ("..completeObjectives.."/"..totalObjectives..")");
+      print("gsQS: ["..level.."] '"..link.."': "..updatedText);
+      print("gsQS: ["..level.."] '"..link.."': Objective Complete ("..completeObjectives.."/"..totalObjectives..")");
       gsQuestSounds:Play(sounds.objectiveComplete);
     elseif questProgress > self.currentQuestProgressCounter then
       --Quest progress is made
       if (updatedText) then 
-        print("gsQS: ["..level.."] '"..title.."': "..updatedText);
+        print("gsQS: ["..level.."] '"..link.."': "..updatedText);
       else
-        print("gsQS: ["..level.."] '"..title.."': Updated");
+        print("gsQS: ["..level.."] '"..link.."': Updated");
       end
       gsQuestSounds:Play(sounds.objectiveProgress);
     end
