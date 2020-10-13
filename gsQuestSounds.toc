@@ -1,10 +1,5 @@
-<<<<<<< HEAD
-﻿## Interface: 80200
-## Title: gsQuestSounds (GameShaman)
-=======
 ﻿## Interface: 90001
-## Title: gsQuestSounds (|cffeda55fgameshaman.com|r)
->>>>>>> 90212835bd81c296f812602678f25e416d6e9993
+## Title: gsQuestSounds (GameShaman)
 ## Notes: Plays sounds when finishing quest objectives
 ## Author: ColbyWanShinobi
 ## Version: 1.0
