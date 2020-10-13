@@ -31,8 +31,29 @@ if MainMenuBarLeftEndCap then
   };
 end
 
+<<<<<<< HEAD
 local gsQuestSounds = CreateFrame("Frame");
 local events = {};
+=======
+gsQuestSounds.currentQuestId = 0;
+gsQuestSounds.currentQuestTitle = '';
+gsQuestSounds.currentQuestLevel = 0;
+gsQuestSounds.currentCompleteQuestObjectives = 0;
+gsQuestSounds.currentQuestProgressCounter = 0;
+gsQuestSounds.currentQuestProgressTable = {};
+gsQuestSounds.currentQuestLink = "";
+
+local function getCompleteObjectiveCount(objectives)
+  local completeObjectives = 0;
+  for objIndex, objInfo in ipairs(objectives) do
+    --print(objIndex,objInfo.type,objInfo.text,objInfo.numRequired,objInfo.numFulfilled, objInfo.finished);
+    if (objInfo.finished) then
+      completeObjectives = completeObjectives + 1;
+    end
+  end
+  return completeObjectives;
+end
+>>>>>>> 90212835bd81c296f812602678f25e416d6e9993
 
 gsQuestSounds.questIndex = 0;
 gsQuestSounds.questId = 0;
@@ -49,6 +70,7 @@ local function countCompleteObjectives(index)
   return n;
 end
 
+<<<<<<< HEAD
 function gsQuestSounds:setQuest(index)
   self.questIndex = index;
   if index > 0 then
@@ -96,6 +118,64 @@ function gsQuestSounds:checkQuest()
           print("gsQuestSounds: ["..level.."] '"..link.."': updated");
           gsQuestSounds:Play(sounds.objectiveProgress);
         end
+=======
+local function createQuestLink(id, level, title)
+  --https://wow.gamepedia.com/QuestLink
+  --|cff808080|Hquest:99:15|h[Arugal's Folly]|h|r
+  --|cffffffff|Hquest:QUESTID:QUESTLEVEL|h[QUESTTITLE]|h|r
+  local link = "|cffffff00|Hquest:"..id..":"..level.."|h["..title.."]|h|r";
+  return link;
+end
+
+function gsQuestSounds:setCurrentQuest(id)
+  if id and id > 0 then
+    self.currentQuestId = id;
+    local index = C_QuestLog.GetLogIndexForQuestID(id);
+    local info = C_QuestLog.GetInfo(index);
+    local level = info.level;
+    self.currentQuestLevel = level;
+    local title = info.title;
+    self.currentQuestTitle = title;
+    local objectives = C_QuestLog.GetQuestObjectives(id);
+    self.currentQuestProgressTable = objectives;
+    self.currentCompleteQuestObjectives = getCompleteObjectiveCount(objectives);
+    self.currentQuestProgressCounter = getQuestProgressCount(objectives);
+    local link = createQuestLink(id, level, title);
+    self.currentQuestLink = link;
+  end
+end
+
+function gsQuestSounds:checkCurrentQuest()
+  local id = gsQuestSounds.currentQuestId;
+  if id and id > 0 then
+    local title = gsQuestSounds.currentQuestTitle;
+    local level = self.currentQuestLevel;
+    local title = self.currentQuestTitle;
+    local link = self.currentQuestLink;
+    local complete = C_QuestLog.ReadyForTurnIn(id);
+    local totalObjectives = C_QuestLog.GetNumQuestObjectives(id);
+    local objectives = C_QuestLog.GetQuestObjectives(id);
+    local completeObjectives = getCompleteObjectiveCount(objectives);
+    local questProgress = getQuestProgressCount(objectives);
+    local updatedText = getUpdatedQuestObjectiveString(id, self.currentQuestProgressTable, objectives);
+    
+    if complete then
+      --Quest is complete
+      print("gsQS: ["..level.."] '"..link.."': "..updatedText);
+      print("gsQS: ["..level.."] '"..link.."': Quest Complete");
+      gsQuestSounds:Play(sounds.questComplete);
+    elseif completeObjectives > self.currentCompleteQuestObjectives then
+      --An objective is complete
+      print("gsQS: ["..level.."] '"..link.."': "..updatedText);
+      print("gsQS: ["..level.."] '"..link.."': Objective Complete ("..completeObjectives.."/"..totalObjectives..")");
+      gsQuestSounds:Play(sounds.objectiveComplete);
+    elseif questProgress > self.currentQuestProgressCounter then
+      --Quest progress is made
+      if (updatedText) then 
+        print("gsQS: ["..level.."] '"..link.."': "..updatedText);
+      else
+        print("gsQS: ["..level.."] '"..link.."': Updated");
+>>>>>>> 90212835bd81c296f812602678f25e416d6e9993
       end
     end
   end
