@@ -1,1 +1,8 @@
-﻿
+﻿## Interface: 90001
+## Title: gsQuestSounds (|cffeda55fgameshaman.com|r)
+## Notes: Plays sounds when finishing quest objectives
+## Author: ColbyWanShinobi
+## Version: 1.0
+## X-Category: Interface Enhancements
+
+gsQuestSounds.lua
