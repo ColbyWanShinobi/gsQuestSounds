@@ -40,6 +40,22 @@ gsQuestSounds.currentQuestProgressCounter = 0;
 gsQuestSounds.currentQuestProgressTable = {};
 gsQuestSounds.currentQuestLink = "";
 
+local function printTable(table)
+	if type(table) == "table" then
+		for k, v in pairs(table) do
+			local value;
+			if type(v) == "string" or type(v) == "number" then
+				value = v;
+			else
+				value = type(v);
+			end
+			print("["..k.."]".."["..value.."]");
+		end
+	else
+		print("NOT A TABLE");
+	end
+end
+
 local function getCompleteObjectiveCount(objectives)
   local completeObjectives = 0;
   for objIndex, objInfo in ipairs(objectives) do
