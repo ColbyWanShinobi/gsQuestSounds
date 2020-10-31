@@ -44,15 +44,15 @@ local function printTable(table)
 	if type(table) == "table" then
 		for k, v in pairs(table) do
 			local value;
-			if type(v) == "string" or type(v) == "number" then
+			if type(v) == "string" or type(v) == "number" or type(v) == "boolean" then
 				value = v;
 			else
 				value = type(v);
 			end
-			print("["..k.."]".."["..value.."]");
+			print("["..k.."]".."[", value, "]");
 		end
 	else
-		print("NOT A TABLE");
+		print("NOT A TABLE", type(table), table);
 	end
 end
 
@@ -79,8 +79,13 @@ end
 local function getUpdatedQuestObjectiveString(id, oldObjectives, freshObjectives)
   local questText = "";
   for objIndex, objInfo in ipairs(oldObjectives) do
-    if (objInfo.numFulfilled ~= freshObjectives[objIndex].numFulfilled) then
-      questText = freshObjectives[objIndex].text;
+    --printTable(objInfo)
+    --print("===")
+    --printTable(freshObjectives[objIndex])
+    if objInfo ~= nil and freshObjectives ~= nil then
+      if (objInfo.numFulfilled ~= freshObjectives[objIndex].numFulfilled) then
+        questText = freshObjectives[objIndex].text;
+      end
     end
   end
   return questText;
@@ -96,6 +101,16 @@ end
 
 function gsQuestSounds:setCurrentQuest(id)
   if id and id > 0 then
+    local objectives = C_QuestLog.GetQuestObjectives(id);
+    local progressCount = getQuestProgressCount(objectives);
+    
+    if id == self.currentQuestId and progressCount <= self.currentQuestProgressCounter  then
+      --There seems to be a delay in gettting quest progress which is triggering notifications of previous progress. Check to make sure this is not the case
+      --DON'T UPDATE ANYTHING!
+      --print('NO FLAPPING!!!!!!!!!')
+      return
+    end
+     
     self.currentQuestId = id;
     local index = C_QuestLog.GetLogIndexForQuestID(id);
     local info = C_QuestLog.GetInfo(index);
@@ -103,10 +118,9 @@ function gsQuestSounds:setCurrentQuest(id)
     self.currentQuestLevel = level;
     local title = info.title;
     self.currentQuestTitle = title;
-    local objectives = C_QuestLog.GetQuestObjectives(id);
     self.currentQuestProgressTable = objectives;
     self.currentCompleteQuestObjectives = getCompleteObjectiveCount(objectives);
-    self.currentQuestProgressCounter = getQuestProgressCount(objectives);
+    self.currentQuestProgressCounter = progressCount;
     local link = createQuestLink(id, level, title);
     self.currentQuestLink = link;
   end
@@ -134,9 +148,10 @@ function gsQuestSounds:checkCurrentQuest()
     elseif completeObjectives > self.currentCompleteQuestObjectives then
       --An objective is complete
       print("gsQS: ["..level.."] '"..link.."': "..updatedText);
-      print("gsQS: ["..level.."] '"..link.."': Objective Complete ("..completeObjectives.."/"..totalObjectives..")");
+      print("gsQ2: ["..level.."] '"..link.."': Objective Complete ("..completeObjectives.."/"..totalObjectives..")");
       gsQuestSounds:Play(sounds.objectiveComplete);
     elseif questProgress > self.currentQuestProgressCounter then
+      --print("LMAO", questProgress, self.currentQuestProgressCounter)
       --Quest progress is made
       if (updatedText) then 
         print("gsQS: ["..level.."] '"..link.."': "..updatedText);
