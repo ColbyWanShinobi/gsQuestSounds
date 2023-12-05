@@ -12,14 +12,14 @@ local sounds = {
   --questComplete is played whenever the quest is finally completed and ready to be turned in
   --"Sound/Creature/Peon/PeonBuildingComplete1.ogg"
   questComplete = 558132,
-  
+
   --ObjectiveComplete is played whenever a quest objective is removed from the quest log.
   --"Sound/Creature/Peon/PeonReady1.ogg"
   objectiveComplete = 558137,
-  
+
   --ObjectiveProgress is played whenever an accumulation quest is incremented. ie. You've found 3/5 acorns
   --"Sound/Creature/Peon/PeonWhat3.ogg"
-  objectiveProgress = 558143  
+  objectiveProgress = 558143
 };
 
 --Classic
@@ -82,9 +82,23 @@ local function getUpdatedQuestObjectiveString(id, oldObjectives, freshObjectives
     --printTable(objInfo)
     --print("===")
     --printTable(freshObjectives[objIndex])
-    if objInfo ~= nil and freshObjectives ~= nil then
-      if (objInfo.numFulfilled ~= freshObjectives[objIndex].numFulfilled) then
-        questText = freshObjectives[objIndex].text;
+    --I know this is horrible, but I was tired of trying to figure out which of these variables was nil and failing :(
+    if type(freshObjectives) == "table" then
+      if type(objInfo) == "table" then
+        if objInfo ~= nil then
+          if freshObjectives ~= nil then
+            if freshObjectives[objIndex] ~= nil then
+              --print("1", objInfo)
+              --print("2", objInfo.numFulfilled)
+              --print("3", freshObjectives)
+              --print("4", freshObjectives[objIndex])
+              --print("5", freshObjectives[objIndex].numFulfilled)
+              if (objInfo.numFulfilled ~= freshObjectives[objIndex].numFulfilled) then
+                questText = freshObjectives[objIndex].text;
+              end
+            end
+          end
+        end
       end
     end
   end
@@ -103,14 +117,14 @@ function gsQuestSounds:setCurrentQuest(id)
   if id and id > 0 then
     local objectives = C_QuestLog.GetQuestObjectives(id);
     local progressCount = getQuestProgressCount(objectives);
-    
+
     if id == self.currentQuestId and progressCount <= self.currentQuestProgressCounter  then
       --There seems to be a delay in gettting quest progress which is triggering notifications of previous progress. Check to make sure this is not the case
       --DON'T UPDATE ANYTHING!
       --print('NO FLAPPING!!!!!!!!!')
       return
     end
-     
+
     self.currentQuestId = id;
     local index = C_QuestLog.GetLogIndexForQuestID(id);
     local info = C_QuestLog.GetInfo(index);
@@ -139,7 +153,7 @@ function gsQuestSounds:checkCurrentQuest()
     local completeObjectives = getCompleteObjectiveCount(objectives);
     local questProgress = getQuestProgressCount(objectives);
     local updatedText = getUpdatedQuestObjectiveString(id, self.currentQuestProgressTable, objectives);
-    
+
     if complete then
       --Quest is complete
       print("gsQS: ["..level.."] '"..link.."': "..updatedText);
@@ -148,12 +162,12 @@ function gsQuestSounds:checkCurrentQuest()
     elseif completeObjectives > self.currentCompleteQuestObjectives then
       --An objective is complete
       print("gsQS: ["..level.."] '"..link.."': "..updatedText);
-      print("gsQ2: ["..level.."] '"..link.."': Objective Complete ("..completeObjectives.."/"..totalObjectives..")");
+      print("gsQS: ["..level.."] '"..link.."': Objective Complete ("..completeObjectives.."/"..totalObjectives..")");
       gsQuestSounds:Play(sounds.objectiveComplete);
     elseif questProgress > self.currentQuestProgressCounter then
       --print("LMAO", questProgress, self.currentQuestProgressCounter)
       --Quest progress is made
-      if (updatedText) then 
+      if (updatedText) then
         print("gsQS: ["..level.."] '"..link.."': "..updatedText);
       else
         print("gsQS: ["..level.."] '"..link.."': Updated");
