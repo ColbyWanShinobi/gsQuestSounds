@@ -168,12 +168,15 @@ function gsQuestSounds:checkCurrentQuest()
       --print("LMAO", questProgress, self.currentQuestProgressCounter)
       --Quest progress is made
       if (updatedText) then
-        print("gsQS: ["..level.."] '"..link.."': "..updatedText);
+        print("gsQS1: ["..level.."] '"..link.."': "..updatedText);
       else
-        print("gsQS: ["..level.."] '"..link.."': Updated");
+        print("gsQS0: ["..level.."] '"..link.."': Updated");
       end
       gsQuestSounds:Play(sounds.objectiveProgress);
     end
+    --gsQuestSounds.CurrentQuestId = 0;
+    --id = 0;
+    self.currentQuestId = 0;
   end
 end
 
@@ -198,7 +201,7 @@ function gsQuestSounds:Play(sound)
 end
 
 function events:UNIT_QUEST_LOG_CHANGED(unit)
-  -- This event triggers whenevr the quest log is updated.
+  -- This event triggers whenever the quest log is updated.
   if unit=="player" then
     gsQuestSounds:checkCurrentQuest();
   end
