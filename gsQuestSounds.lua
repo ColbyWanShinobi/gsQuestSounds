@@ -64,6 +64,10 @@ local function getCompleteObjectiveCount(objectives)
       completeObjectives = completeObjectives + 1;
     end
   end
+  -- Check if the value is secret (Patch 12.0.0+ security feature)
+  if issecretvalue and issecretvalue(completeObjectives) then
+    return nil;
+  end
   return completeObjectives;
 end
 
@@ -72,6 +76,10 @@ local function getQuestProgressCount(objectives)
   for objIndex, objInfo in ipairs(objectives) do
     --print(objIndex,objInfo.type,objInfo.text,objInfo.numRequired,objInfo.numFulfilled, objInfo.finished);
     updateCount = updateCount + objInfo.numFulfilled;
+  end
+  -- Check if the value is secret (Patch 12.0.0+ security feature)
+  if issecretvalue and issecretvalue(updateCount) then
+    return nil;
   end
   return updateCount;
 end
@@ -118,7 +126,8 @@ function gsQuestSounds:setCurrentQuest(id)
     local objectives = C_QuestLog.GetQuestObjectives(id);
     local progressCount = getQuestProgressCount(objectives);
 
-    if id == self.currentQuestId and progressCount <= self.currentQuestProgressCounter  then
+    -- Guard against secret values (Patch 12.0.0+ security feature)
+    if progressCount and id == self.currentQuestId and progressCount <= self.currentQuestProgressCounter  then
       --There seems to be a delay in gettting quest progress which is triggering notifications of previous progress. Check to make sure this is not the case
       --DON'T UPDATE ANYTHING!
       --print('NO FLAPPING!!!!!!!!!')
@@ -143,7 +152,6 @@ end
 function gsQuestSounds:checkCurrentQuest()
   local id = gsQuestSounds.currentQuestId;
   if id and id > 0 then
-    local title = gsQuestSounds.currentQuestTitle;
     local level = self.currentQuestLevel;
     local title = self.currentQuestTitle;
     local link = self.currentQuestLink;
@@ -159,12 +167,12 @@ function gsQuestSounds:checkCurrentQuest()
       print("gsQS: ["..level.."] '"..link.."': "..updatedText);
       print("gsQS: ["..level.."] '"..link.."': Quest Complete");
       gsQuestSounds:Play(sounds.questComplete);
-    elseif completeObjectives > self.currentCompleteQuestObjectives then
+    elseif completeObjectives and completeObjectives > self.currentCompleteQuestObjectives then
       --An objective is complete
       print("gsQS: ["..level.."] '"..link.."': "..updatedText);
       print("gsQS: ["..level.."] '"..link.."': Objective Complete ("..completeObjectives.."/"..totalObjectives..")");
       gsQuestSounds:Play(sounds.objectiveComplete);
-    elseif questProgress > self.currentQuestProgressCounter then
+    elseif questProgress and questProgress > self.currentQuestProgressCounter then
       --print("LMAO", questProgress, self.currentQuestProgressCounter)
       --Quest progress is made
       if (updatedText) then
@@ -174,8 +182,6 @@ function gsQuestSounds:checkCurrentQuest()
       end
       gsQuestSounds:Play(sounds.objectiveProgress);
     end
-    --gsQuestSounds.CurrentQuestId = 0;
-    --id = 0;
     self.currentQuestId = 0;
   end
 end
