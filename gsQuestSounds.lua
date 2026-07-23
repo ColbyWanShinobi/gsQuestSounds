@@ -39,6 +39,8 @@ gsQuestSounds.currentCompleteQuestObjectives = 0;
 gsQuestSounds.currentQuestProgressCounter = 0;
 gsQuestSounds.currentQuestProgressTable = {};
 gsQuestSounds.currentQuestLink = "";
+gsQuestSounds.pendingQuestInfoId = 0;
+gsQuestSounds.pendingQuestInfoRetries = 0;
 
 local function printTable(table)
 	if type(table) == "table" then
@@ -58,7 +60,7 @@ end
 
 local function getCompleteObjectiveCount(objectives)
   local completeObjectives = 0;
-  for objIndex, objInfo in ipairs(objectives) do
+  for objIndex, objInfo in ipairs(objectives or {}) do
     --print(objIndex,objInfo.type,objInfo.text,objInfo.numRequired,objInfo.numFulfilled, objInfo.finished);
     if (objInfo.finished) then
       completeObjectives = completeObjectives + 1;
@@ -73,7 +75,7 @@ end
 
 local function getQuestProgressCount(objectives)
   local updateCount = 0;
-  for objIndex, objInfo in ipairs(objectives) do
+  for objIndex, objInfo in ipairs(objectives or {}) do
     --print(objIndex,objInfo.type,objInfo.text,objInfo.numRequired,objInfo.numFulfilled, objInfo.finished);
     updateCount = updateCount + objInfo.numFulfilled;
   end
@@ -121,6 +123,44 @@ local function createQuestLink(id, level, title)
   return link;
 end
 
+function gsQuestSounds:resolveCurrentQuestInfo(id)
+  local index = C_QuestLog.GetLogIndexForQuestID(id);
+  if not index then
+    return false;
+  end
+
+  local info = C_QuestLog.GetInfo(index);
+  if not info then
+    return false;
+  end
+
+  self.currentQuestLevel = info.level or 0;
+  self.currentQuestTitle = info.title or ("Quest "..id);
+  self.currentQuestLink = createQuestLink(id, self.currentQuestLevel, self.currentQuestTitle);
+  self.pendingQuestInfoId = 0;
+  self.pendingQuestInfoRetries = 0;
+  return true;
+end
+
+function gsQuestSounds:retryCurrentQuestInfo(id)
+  if self.pendingQuestInfoId ~= id or self.currentQuestId ~= id then
+    return;
+  end
+
+  if self:resolveCurrentQuestInfo(id) then
+    return;
+  end
+
+  self.pendingQuestInfoRetries = self.pendingQuestInfoRetries + 1;
+  if self.pendingQuestInfoRetries < 3 then
+    C_Timer.After(0, function()
+      gsQuestSounds:retryCurrentQuestInfo(id);
+    end);
+  else
+    self.pendingQuestInfoId = 0;
+  end
+end
+
 function gsQuestSounds:setCurrentQuest(id)
   if id and id > 0 then
     local objectives = C_QuestLog.GetQuestObjectives(id);
@@ -135,17 +175,22 @@ function gsQuestSounds:setCurrentQuest(id)
     end
 
     self.currentQuestId = id;
-    local index = C_QuestLog.GetLogIndexForQuestID(id);
-    local info = C_QuestLog.GetInfo(index);
-    local level = info.level;
-    self.currentQuestLevel = level;
-    local title = info.title;
-    self.currentQuestTitle = title;
     self.currentQuestProgressTable = objectives;
     self.currentCompleteQuestObjectives = getCompleteObjectiveCount(objectives);
     self.currentQuestProgressCounter = progressCount;
-    local link = createQuestLink(id, level, title);
-    self.currentQuestLink = link;
+
+    -- QUEST_WATCH_UPDATE is intentionally early. The ID can be valid while its
+    -- quest-log index is still nil, so never pass that nil into GetInfo.
+    if not self:resolveCurrentQuestInfo(id) then
+      self.currentQuestLevel = 0;
+      self.currentQuestTitle = C_QuestLog.GetTitleForQuestID(id) or ("Quest "..id);
+      self.currentQuestLink = createQuestLink(id, self.currentQuestLevel, self.currentQuestTitle);
+      self.pendingQuestInfoId = id;
+      self.pendingQuestInfoRetries = 0;
+      C_Timer.After(0, function()
+        gsQuestSounds:retryCurrentQuestInfo(id);
+      end);
+    end
   end
 end
 
@@ -183,6 +228,8 @@ function gsQuestSounds:checkCurrentQuest()
       gsQuestSounds:Play(sounds.objectiveProgress);
     end
     self.currentQuestId = 0;
+    self.pendingQuestInfoId = 0;
+    self.pendingQuestInfoRetries = 0;
   end
 end
 
@@ -209,6 +256,11 @@ end
 function events:UNIT_QUEST_LOG_CHANGED(unit)
   -- This event triggers whenever the quest log is updated.
   if unit=="player" then
+    -- This is the primary synchronization point for the quest-log entry. The
+    -- next-frame retry in setCurrentQuest only covers rare ordering delays.
+    if gsQuestSounds.pendingQuestInfoId > 0 then
+      gsQuestSounds:resolveCurrentQuestInfo(gsQuestSounds.pendingQuestInfoId);
+    end
     gsQuestSounds:checkCurrentQuest();
   end
 end
