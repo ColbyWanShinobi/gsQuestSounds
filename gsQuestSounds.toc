@@ -1,4 +1,4 @@
-﻿## Interface: 120000
+﻿## Interface: 120200
 ## Title: gsQuestSounds (|cffeda55fgameshaman.com|r)
 ## Notes: Plays sounds when finishing quest objectives
 ## Author: ColbyWanShinobi
