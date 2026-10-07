@@ -153,6 +153,8 @@ function gsQuestSounds:retryCurrentQuestInfo(id)
 
   self.pendingQuestInfoRetries = self.pendingQuestInfoRetries + 1;
   if self.pendingQuestInfoRetries < 3 then
+    -- QUEST_WATCH_UPDATE can arrive before the quest entry is indexed. Retry on
+    -- the next update cycle, but never keep retrying indefinitely.
     C_Timer.After(0, function()
       gsQuestSounds:retryCurrentQuestInfo(id);
     end);
