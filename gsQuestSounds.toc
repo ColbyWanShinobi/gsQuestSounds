@@ -1,8 +1,9 @@
 ﻿## Interface: 120100
-## Title: gsQuestSounds (|cffeda55fgameshaman.com|r)
+## Title: |cffeda55fgs|r|cff3399ffQuestSounds|r (|cffeda55fgameshaman.com|r)
 ## Notes: Plays sounds when finishing quest objectives
 ## Author: ColbyWanShinobi
 ## Version: 2.0.0
+## IconTexture: Interface\AddOns\gsQuestSounds\gsIcon
 ## X-Category: Interface Enhancements
 
 gsQuestSounds.lua
